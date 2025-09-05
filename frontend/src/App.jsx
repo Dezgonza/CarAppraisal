@@ -34,7 +34,8 @@ function App() {
       websocketRef.current.close()
     }
 
-    const ws = new WebSocket(`ws://localhost:8000/ws/${sessionId}`)
+    const ws = new WebSocket(`wss://carappraisal-1.onrender.com/ws/${sessionId}`)
+    // const ws = new WebSocket(`ws://localhost:8000/ws/${sessionId}`)
     websocketRef.current = ws
 
     ws.onopen = () => {
@@ -126,7 +127,8 @@ function App() {
       const body = buildRequestBody(sessionId)
       const endpoint = useProgressMode ? '/valuar-con-progreso' : '/valuar'
       
-      const response = await fetch(`http://localhost:8000${endpoint}`, {
+      const response = await fetch(`https://carappraisal-1.onrender.com${endpoint}`, {
+      // const response = await fetch(`http://localhost:8000${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
