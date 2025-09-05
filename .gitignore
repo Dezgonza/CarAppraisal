@@ -1,2 +1,5 @@
 .claude
 .vscode
+Dockerfile *
+*\__pycache__
+*.ipynb

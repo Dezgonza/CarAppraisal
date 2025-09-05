@@ -1,46 +1,53 @@
+import sys
+import time
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
-import time
-
 
 def get_info_by_patente(patente):
+    options = Options()
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
 
-    # Configurar Selenium (modo headless para que no abra ventana)
-    options = webdriver.ChromeOptions()
-    options.add_argument("--headless=new")  
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    if sys.platform == "win32":
+        # Windows: usar ChromeDriverManager
+        from selenium.webdriver.chrome.service import Service
+        from webdriver_manager.chrome import ChromeDriverManager
+        driver = webdriver.Chrome(
+            service=Service(ChromeDriverManager().install()),
+            options=options
+        )
+    else:
+        # Linux / Docker: usar Chromium instalado
+        options.binary_location = "/usr/bin/chromium"
+        driver = webdriver.Chrome(options=options)
 
-    # Abrir la página
+    try:
+        driver.get("https://www.patentechile.com/")
+        time.sleep(2)
 
-    driver.get("https://www.patentechile.com/")
-    time.sleep(2)
+        driver.save_screenshot("patente.png")
 
-    # Buscar el campo de patente
-    campo_patente = driver.find_element(By.ID, "txtTerm")  # puede ser 'patente' o similar
-    campo_patente.clear()
-    campo_patente.send_keys(patente)
+        campo_patente = driver.find_element(By.ID, "txtTerm")
+        campo_patente.clear()
+        campo_patente.send_keys(patente)
+        campo_patente.send_keys(Keys.RETURN)
+        time.sleep(3)
 
-    # Enviar con Enter
-    campo_patente.send_keys(Keys.RETURN)
-    time.sleep(3)  # esperar que cargue resultado
+        html = driver.page_source
 
-    # Obtener el HTML de los resultados
-    html = driver.page_source
-    driver.quit()
+    finally:
+        driver.quit()
 
     # Parsear con BeautifulSoup
     soup = BeautifulSoup(html, "lxml")
-
-    # Buscar todas las filas de la tabla
     datos = {}
     for fila in soup.select("tbody tr"):
         celdas = fila.find_all("td")
         if len(celdas) == 2:
-            # Primer td = nombre del campo, segundo td = valor
             campo = celdas[0].get_text(strip=True).replace(":", "")
             valor = celdas[1].get_text(strip=True)
             datos[campo] = valor

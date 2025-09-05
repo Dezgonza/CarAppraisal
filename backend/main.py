@@ -122,7 +122,7 @@ async def get_base_df_price_async(patente: Optional[str], vehicle_data: Optional
         year = vehicle_data.year
 
     await send_progress(session_id, global_step_offset + 3, global_total_steps, "Consultando base de datos por patente...")  
-    df = await scrap_pipeline_async(brand, model, year)
+    df = scrap_pipeline_async(brand, model, year)
     df = df[(df.price.notna()) & (df.year==year)].drop_duplicates()
     print(df)
 

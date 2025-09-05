@@ -1,11 +1,12 @@
 import re
-import json
+# import json
 import asyncio
-import urllib.parse
+# import urllib.parse
 import pandas as pd
 
-from get_google_info import google_scrap
-from get_ml_info import ml_scrap, ml_scrap_sync
+from get_google_info import google_api_scrap
+#google_scrap, 
+# from get_ml_info import ml_scrap, ml_scrap_sync
 
 def custom_split(text, symbol):
     splitted_text = text.split(symbol)
@@ -56,106 +57,121 @@ def extract_custom_info(brand, model, text):
         "model_detail": model_detail
     }
 
-def scrap_chileautos(query, max_pages=5):
+# def scrap_chileautos(query, max_pages=5):
 
-    search_query = f"{query} site:chileautos.cl"
-    print(f"Buscando: {search_query}")
+#     search_query = f"{query} site:chileautos.cl"
+#     print(f"Buscando: {search_query}")
     
-    encoded_query = urllib.parse.quote_plus(search_query)
+#     encoded_query = urllib.parse.quote_plus(search_query)
         
-    results = []
-    for i in range(max_pages):
+#     results = []
+#     for i in range(max_pages):
 
-        URL_TO_SCRAPE = f"https://www.google.com/search?q={encoded_query}&start={i}"
+#         URL_TO_SCRAPE = f"https://www.google.com/search?q={encoded_query}&start={i}"
 
-        cars_info = json.loads(asyncio.run(google_scrap(URL_TO_SCRAPE)))
-        results.extend(cars_info)
+#         cars_info = json.loads(asyncio.run(google_scrap(URL_TO_SCRAPE)))
+#         results.extend(cars_info)
 
-    return results
+#     return results
 
-async def scrap_chileautos_async(query, max_pages=5):
-    search_query = f"{query} site:chileautos.cl"
-    print(f"Buscando: {search_query}")
+# async def scrap_chileautos_async(query, max_pages=5):
+#     search_query = f"{query} site:chileautos.cl"
+#     print(f"Buscando: {search_query}")
     
-    encoded_query = urllib.parse.quote_plus(search_query)
+#     encoded_query = urllib.parse.quote_plus(search_query)
 
-    tasks = []
-    for i in range(max_pages):
-        url_to_scrape = f"https://www.google.com/search?q={encoded_query}&start={i}"
-        tasks.append(google_scrap(url_to_scrape))
+#     tasks = []
+#     for i in range(max_pages):
+#         url_to_scrape = f"https://www.google.com/search?q={encoded_query}&start={i}"
+#         tasks.append(google_scrap(url_to_scrape))
 
-    # Ejecutar todas en paralelo
-    all_results = await asyncio.gather(*tasks)
+#     # Ejecutar todas en paralelo
+#     all_results = await asyncio.gather(*tasks)
 
-    # Flatten + parse
-    results = []
-    for cars_info in all_results:
-        results.extend(json.loads(cars_info))
+#     # Flatten + parse
+#     results = []
+#     for cars_info in all_results:
+#         results.extend(json.loads(cars_info))
 
-    return results
+#     return results
 
-def scrap_chileautos_sync(query, max_pages=5):
-    import sys
-    if sys.platform == 'win32':
-        # En Windows, configurar el event loop policy antes de crear el loop
-        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+# def scrap_chileautos_sync(query, max_pages=5):
+#     import sys
+#     if sys.platform == 'win32':
+#         # En Windows, configurar el event loop policy antes de crear el loop
+#         asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
     
-    # Crear un nuevo event loop para este thread
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    try:
-        return loop.run_until_complete(scrap_chileautos_async(query, max_pages))
-    finally:
-        loop.close()
+#     # Crear un nuevo event loop para este thread
+#     loop = asyncio.new_event_loop()
+#     asyncio.set_event_loop(loop)
+#     try:
+#         return loop.run_until_complete(scrap_chileautos_async(query, max_pages))
+#     finally:
+#         loop.close()
 
-def scrap_pipeline(brand, model, year):
+# def scrap_pipeline(brand, model, year):
 
-    # ChileAutos Scrap
-    query_ca = " ".join([brand,model,str(year)])
-    # cars_info = scrap_chileautos(query_ca, 5)
-    cars_info = asyncio.run(scrap_chileautos_async(query_ca, 5))
-    results = []
-    for car_info in cars_info:
-        for sub_text in custom_split(car_info['description'], ";"):
-            results.append(extract_custom_info(brand, model, sub_text))
+#     # ChileAutos Scrap
+#     query_ca = " ".join([brand,model,str(year)])
+#     # cars_info = scrap_chileautos(query_ca, 5)
+#     cars_info = asyncio.run(scrap_chileautos_async(query_ca, 5))
+#     results = []
+#     for car_info in cars_info:
+#         for sub_text in custom_split(car_info['description'], ";"):
+#             results.append(extract_custom_info(brand, model, sub_text))
 
-    # MercadoLibre Scrap
-    query_ml = " ".join([brand,model])
-    cars_info = asyncio.run(ml_scrap(query_ml))
+#     # MercadoLibre Scrap
+#     query_ml = " ".join([brand,model])
+#     cars_info = asyncio.run(ml_scrap(query_ml))
 
-    for car_info in json.loads(cars_info):
-        for key in ['price','year','km']:
-            car_info[key] = int(re.sub(r'[^\d]', '', car_info[key]))
-        results.append(car_info)
+#     for car_info in json.loads(cars_info):
+#         for key in ['price','year','km']:
+#             car_info[key] = int(re.sub(r'[^\d]', '', car_info[key]))
+#         results.append(car_info)
 
-    return pd.DataFrame(results)
+#     return pd.DataFrame(results)
 
-async def scrap_pipeline_async(brand, model, year):
+# async def scrap_pipeline_async_old(brand, model, year):
+#     query_ca = " ".join([brand, model, str(year)])
+#     query_ml = " ".join([brand, model])
+
+#     # Ejecutar ambos scrapes en paralelo usando threads para evitar problemas con subprocess
+#     cars_ca_task = asyncio.to_thread(scrap_chileautos_sync, query_ca, 5)
+#     cars_ml_task = asyncio.to_thread(ml_scrap_sync, query_ml)
+
+#     cars_ca, cars_ml = await asyncio.gather(cars_ca_task, cars_ml_task)
+
+#     results = []
+
+#     # Procesar ChileAutos
+#     for car_info in cars_ca:
+#         for sub_text in custom_split(car_info['description'], ";"):
+#             results.append(extract_custom_info(brand, model, sub_text))
+
+#     # Procesar MercadoLibre  
+#     cars_ml_parsed = json.loads(cars_ml) if isinstance(cars_ml, str) else cars_ml
+#     for car_info in cars_ml_parsed:
+#         for key in ['price','year','km']:
+#             try:
+#                 car_info[key] = int(re.sub(r'[^\d]', '', car_info[key]))
+#             except KeyError:
+#                 continue
+#         results.append(car_info)
+
+#     return pd.DataFrame(results)
+
+def scrap_pipeline_async(brand, model, year):
     query_ca = " ".join([brand, model, str(year)])
-    query_ml = " ".join([brand, model])
-
-    # Ejecutar ambos scrapes en paralelo usando threads para evitar problemas con subprocess
-    cars_ca_task = asyncio.to_thread(scrap_chileautos_sync, query_ca, 5)
-    cars_ml_task = asyncio.to_thread(ml_scrap_sync, query_ml)
-
-    cars_ca, cars_ml = await asyncio.gather(cars_ca_task, cars_ml_task)
-
+    cars_ca = google_api_scrap(query_ca)
+   
     results = []
 
     # Procesar ChileAutos
     for car_info in cars_ca:
-        for sub_text in custom_split(car_info['description'], ";"):
+        print(car_info["title"]+' '+car_info["snippet"])
+        for sub_text in custom_split(car_info["title"]+' '+car_info["snippet"], ";"):
+            print('st', sub_text)
             results.append(extract_custom_info(brand, model, sub_text))
-
-    # Procesar MercadoLibre  
-    cars_ml_parsed = json.loads(cars_ml) if isinstance(cars_ml, str) else cars_ml
-    for car_info in cars_ml_parsed:
-        for key in ['price','year','km']:
-            try:
-                car_info[key] = int(re.sub(r'[^\d]', '', car_info[key]))
-            except KeyError:
-                continue
-        results.append(car_info)
 
     return pd.DataFrame(results)
 
