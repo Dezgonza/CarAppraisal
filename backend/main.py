@@ -107,6 +107,7 @@ async def get_base_df_price_async(patente: Optional[str], vehicle_data: Optional
         await asyncio.sleep(1)
         
         vehicle_data = get_info_by_patente(patente)
+        print(vehicle_data)
         brand = vehicle_data["Marca"].lower()
         model = vehicle_data["Modelo"].lower()
         year = int(vehicle_data["Año"])
