@@ -28,6 +28,7 @@ def get_info_by_patente(patente):
     try:
         driver.get("https://www.patentechile.com/")
         time.sleep(2)
+        print('here 2')
 
         driver.save_screenshot("patente.png")
 

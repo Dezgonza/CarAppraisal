@@ -106,6 +106,7 @@ async def get_base_df_price_async(patente: Optional[str], vehicle_data: Optional
         await send_progress(session_id, global_step_offset + 2, global_total_steps, "Consultando base de datos por patente...")
         await asyncio.sleep(1)
         
+        print('here 1')
         vehicle_data = get_info_by_patente(patente)
         print(vehicle_data)
         brand = vehicle_data["Marca"].lower()
@@ -126,7 +127,7 @@ async def get_base_df_price_async(patente: Optional[str], vehicle_data: Optional
 
     await send_progress(session_id, global_step_offset + 3, global_total_steps, "Consultando base de datos por patente...")  
     df = scrap_pipeline_async(brand, model, year)
-    df = df[(df.price.notna()) & (df.year==year)].drop_duplicates()
+    df = df[(df.price.notna()) & (df.year==year) & (df.price>1e6)].drop_duplicates()
     print(df)
 
     return df
